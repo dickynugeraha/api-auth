@@ -13,8 +13,10 @@ type AuthController struct {
 	caseUser usecase.UserUsecaseInterface
 }
 
-func NewInitController() *AuthController {
-	return &AuthController{}
+func NewInitController(caseUser usecase.UserUsecaseInterface) *AuthController {
+	return &AuthController{
+		caseUser: caseUser,
+	}
 }
 
 func (ac *AuthController) Register(c *gin.Context){

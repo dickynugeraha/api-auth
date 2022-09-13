@@ -21,7 +21,13 @@ type UserRepository struct{
 	db *gorm.DB
 }
 
-func (ur UserRepository) FindbyEmail(email string) (User, error) {
+func NewUserRepository(db *gorm.DB) UserRepositoryInterface {
+	return &UserRepository{
+		db: db, 
+	}
+}
+
+func (ur *UserRepository) FindbyEmail(email string) (User, error) {
 	// db := db.SetupMysql()
 	var user User
 	
@@ -33,7 +39,7 @@ func (ur UserRepository) FindbyEmail(email string) (User, error) {
 	return user, nil
 }
 
-func (ur UserRepository) CreateUser(input *domains.Register, passwordHashed string) error {
+func (ur *UserRepository) CreateUser(input *domains.Register, passwordHashed string) error {
 	// db := db.SetupMysql()
 	uuid := uuid.New()
 
@@ -53,7 +59,7 @@ func (ur UserRepository) CreateUser(input *domains.Register, passwordHashed stri
 	return nil
 }
 
-func (ur UserRepository) UpdatePassword(email, newPassword string) error {
+func (ur *UserRepository) UpdatePassword(email, newPassword string) error {
 	// db := db.SetupMysql()
 	user, _ := ur.FindbyEmail(email)
 	user.Password = newPassword
@@ -62,7 +68,7 @@ func (ur UserRepository) UpdatePassword(email, newPassword string) error {
 	return nil
 }
 
-func (ur UserRepository) Users() ([]User, error) {
+func (ur *UserRepository) Users() ([]User, error) {
 	// db := db.SetupMysql()
 	var users []User
 	
@@ -73,7 +79,7 @@ func (ur UserRepository) Users() ([]User, error) {
 	return users, nil
 }
 
-func (ur UserRepository) GetUserById(userId string) (User, error) {
+func (ur *UserRepository) GetUserById(userId string) (User, error) {
 	// db := db.SetupMysql()
 	var user User
 
@@ -84,7 +90,7 @@ func (ur UserRepository) GetUserById(userId string) (User, error) {
 	return user, nil
 }
 
-func (ur UserRepository) DeleteUserById(userId string) error {
+func (ur *UserRepository) DeleteUserById(userId string) error {
 	// db := db.SetupMysql()
 
 	result := ur.db.Delete(&User{}, "id = ?", userId)

@@ -16,7 +16,13 @@ type UserUsecase struct {
 	repo repository.UserRepositoryInterface
 }
 
-func (uu UserUsecase) AllUsers() ([]repository.User, error) {
+func NewUserUsecase(userRepo repository.UserRepositoryInterface) UserUsecaseInterface {
+	return &UserUsecase{
+		repo: userRepo,
+	}
+}
+
+func (uu *UserUsecase) AllUsers() ([]repository.User, error) {
 	users, err := uu.repo.Users()
 
 	if err != nil {
@@ -25,7 +31,7 @@ func (uu UserUsecase) AllUsers() ([]repository.User, error) {
 	return users, nil
 }
 
-func (uu UserUsecase) RegisterHandler(input *domains.Register) (int, error) {
+func (uu *UserUsecase) RegisterHandler(input *domains.Register) (int, error) {
 	err := emailRequired(input.Email)
 	statusHttp := 500
 	if err != nil {
@@ -50,7 +56,7 @@ func (uu UserUsecase) RegisterHandler(input *domains.Register) (int, error) {
 	return 201, nil
 }
 
-func (uu UserUsecase) LoginHandler(input *domains.Login) (repository.User, string, error) {
+func (uu *UserUsecase) LoginHandler(input *domains.Login) (repository.User, string, error) {
 	err := emailRequired(input.Email)
 	if err != nil {
 		return repository.User{}, "", err
@@ -71,7 +77,7 @@ func (uu UserUsecase) LoginHandler(input *domains.Login) (repository.User, strin
 	return user, token, nil
 }
 
-func (uu UserUsecase) ChangePasswordHandler(input *domains.ChangePassword) error {
+func (uu *UserUsecase) ChangePasswordHandler(input *domains.ChangePassword) error {
 	_, err := uu.repo.FindbyEmail(input.Email);
 	if err != nil {
 		return err
@@ -88,7 +94,7 @@ func (uu UserUsecase) ChangePasswordHandler(input *domains.ChangePassword) error
 	return err
 }
 
-func (uu UserUsecase) GetSingleUserHandler(userId string) (repository.User, error) {
+func (uu *UserUsecase) GetSingleUserHandler(userId string) (repository.User, error) {
 	user, err := uu.repo.GetUserById(userId);
 	if  err != nil {
 		return user, err
@@ -96,7 +102,7 @@ func (uu UserUsecase) GetSingleUserHandler(userId string) (repository.User, erro
 	return user, nil
 }
 
-func (uu UserUsecase) DeleteUserHadler(userId string) error {
+func (uu *UserUsecase) DeleteUserHadler(userId string) error {
 	if err := uu.repo.DeleteUserById(userId); err != nil {
 		return err
 	}

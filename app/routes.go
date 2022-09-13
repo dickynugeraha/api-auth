@@ -2,21 +2,21 @@ package app
 
 import (
 	"01_REST_Auth/controllers"
-	// "01_REST_Auth/usecase"
+	"01_REST_Auth/usecase"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 
-func Routes(db *gorm.DB) *gin.Engine {
-	c := controllers.NewInitController()
+func Routes(db *gorm.DB, uc usecase.UserUsecaseInterface) *gin.Engine {
+	c := controllers.NewInitController(uc)
 
 	r := gin.Default()
 	r.Use(func(c *gin.Context){
 		c.Set("db", db)
 	})
-
+	
 	r.POST("/login", c.Login)
 	r.POST("/register", c.Register)
 	r.POST("/change-password", c.ChangePassword)
