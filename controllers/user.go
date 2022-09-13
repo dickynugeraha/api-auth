@@ -2,14 +2,22 @@ package controllers
 
 import (
 	"01_REST_Auth/domains"
-	repo "01_REST_Auth/services/repository"
-	caseUser "01_REST_Auth/usecase"
+	"01_REST_Auth/usecase"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func Register(c *gin.Context){
+type AuthController struct {
+	caseUser usecase.UserUsecaseInterface
+}
+
+func NewInitController() *AuthController {
+	return &AuthController{}
+}
+
+func (ac *AuthController) Register(c *gin.Context){
 	var inputRegis domains.Register
 
 	if err := c.ShouldBindJSON(&inputRegis); err != nil {
@@ -19,7 +27,7 @@ func Register(c *gin.Context){
 		return
 	}
 
-	statusHttp, err := caseUser.RegisterHandler(&inputRegis)
+	statusHttp, err := ac.caseUser.RegisterHandler(&inputRegis)
 	if err != nil {
 		c.JSON(statusHttp, gin.H{
 			"error" : err.Error(),
@@ -33,7 +41,7 @@ func Register(c *gin.Context){
 	})
 }
 
-func Login(c *gin.Context){
+func (ac *AuthController) Login(c *gin.Context){
 	var inputLogin domains.Login
 
 	if err := c.ShouldBindJSON(&inputLogin); err != nil {
@@ -43,7 +51,7 @@ func Login(c *gin.Context){
 		return
 	}
 
-	user, token, err := caseUser.LoginHandler(&inputLogin)
+	user, token, err := ac.caseUser.LoginHandler(&inputLogin)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error" : err.Error(),
@@ -58,7 +66,7 @@ func Login(c *gin.Context){
 	})
 }
 
-func ChangePassword(c *gin.Context){
+func (ac *AuthController) ChangePassword(c *gin.Context){
 	var inputChangePass domains.ChangePassword
 
 	if err := c.ShouldBindJSON(&inputChangePass); err != nil {
@@ -66,31 +74,23 @@ func ChangePassword(c *gin.Context){
 			"error" : err.Error(),
 		})
 	}
-	_, err := repo.FindbyEmail(inputChangePass.Email)
+	
+	err := ac.caseUser.ChangePasswordHandler(&inputChangePass)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error" : "Email not register!",
-		})
-		return
-	}
-	err = caseUser.PasswordRequired(inputChangePass.NewPassword, inputChangePass.PasswordConfirm)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"error" : err.Error(),
 		})
 		return
 	}
-	hashedPassword := caseUser.PasswordHashing(inputChangePass.NewPassword)
-	_ = repo.UpdatePassword(inputChangePass.Email, hashedPassword)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message" : "Password changed!",
 	})
 }
 
-
-func AllUsers(c *gin.Context){
-	users, err := caseUser.AllUsers()
+func (ac *AuthController) AllUsers(c *gin.Context){
+	fmt.Println("Inner controller")
+	users, err := ac.caseUser.AllUsers()
 	
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{
@@ -104,9 +104,9 @@ func AllUsers(c *gin.Context){
 	})
 } 
 
-func SingleUser(c *gin.Context){
+func (ac *AuthController) SingleUser(c *gin.Context){
 	userId := c.Param("user_id")
-	user, err := repo.GetUserById(userId)
+	user, err := ac.caseUser.GetSingleUserHandler(userId)
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{
 			"error" : err.Error(),
@@ -119,7 +119,7 @@ func SingleUser(c *gin.Context){
 	})
 }
 
-func DeleteUser(c *gin.Context){
+func (ac *AuthController) DeleteUser(c *gin.Context){
 	var inputId domains.UserId
 
 	err := c.ShouldBindJSON(&inputId);
@@ -129,7 +129,7 @@ func DeleteUser(c *gin.Context){
 		})
 	}
 
-	err = repo.DeleteUserById(inputId.ID)
+	err = ac.caseUser.DeleteUserHadler(inputId.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error" : err.Error(),

@@ -16,10 +16,8 @@ type UserUsecase struct {
 	repo repository.UserRepositoryInterface
 }
 
-func (uu *UserUsecase) AllUsers() (*[]repository.User, error) {
-	
+func (uu UserUsecase) AllUsers() ([]repository.User, error) {
 	users, err := uu.repo.Users()
-
 
 	if err != nil {
 		return users, err
@@ -27,7 +25,7 @@ func (uu *UserUsecase) AllUsers() (*[]repository.User, error) {
 	return users, nil
 }
 
-func (uu *UserUsecase) RegisterHandler(input *domains.Register) (int, error) {
+func (uu UserUsecase) RegisterHandler(input *domains.Register) (int, error) {
 	err := emailRequired(input.Email)
 	statusHttp := 500
 	if err != nil {
@@ -52,30 +50,28 @@ func (uu *UserUsecase) RegisterHandler(input *domains.Register) (int, error) {
 	return 201, nil
 }
 
-func (uu *UserUsecase) LoginHandler(input *domains.Login) (*repository.User, string, error) {
+func (uu UserUsecase) LoginHandler(input *domains.Login) (repository.User, string, error) {
 	err := emailRequired(input.Email)
 	if err != nil {
-		return &repository.User{}, "", err
+		return repository.User{}, "", err
 	}
-
 	user, err := uu.repo.FindbyEmail(input.Email)
 	if err != nil {
-		return &user, "",err
+		return user, "",err
 	}
-
 	err = checkPasswordHash(input.Password, user.Password)
 	if err != nil {
-		return &user, "", err
+		return user, "", err
 	}
-
 	token, err := generateJWT(user.ID, user.Email)
 	if err != nil {
-		return &user, "", err
+		return user, "", err
 	}
-	return &user, token, nil
+
+	return user, token, nil
 }
 
-func (uu *UserUsecase) ChangePasswordHandler(input *domains.ChangePassword) error {
+func (uu UserUsecase) ChangePasswordHandler(input *domains.ChangePassword) error {
 	_, err := uu.repo.FindbyEmail(input.Email);
 	if err != nil {
 		return err
@@ -90,6 +86,21 @@ func (uu *UserUsecase) ChangePasswordHandler(input *domains.ChangePassword) erro
 		return err
 	}
 	return err
+}
+
+func (uu UserUsecase) GetSingleUserHandler(userId string) (repository.User, error) {
+	user, err := uu.repo.GetUserById(userId);
+	if  err != nil {
+		return user, err
+	}
+	return user, nil
+}
+
+func (uu UserUsecase) DeleteUserHadler(userId string) error {
+	if err := uu.repo.DeleteUserById(userId); err != nil {
+		return err
+	}
+	return nil
 }
 
 func generateJWT(id string, email string) (string, error){

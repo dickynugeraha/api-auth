@@ -21,9 +21,9 @@ type UserRepository struct{
 	db *gorm.DB
 }
 
-func (ur *UserRepository) FindbyEmail(email string) (*User, error) {
+func (ur UserRepository) FindbyEmail(email string) (User, error) {
 	// db := db.SetupMysql()
-	var user *User
+	var user User
 	
 	result := ur.db.First(&user, "email = ?", email);
 	if result.Error != nil {
@@ -33,7 +33,7 @@ func (ur *UserRepository) FindbyEmail(email string) (*User, error) {
 	return user, nil
 }
 
-func (ur *UserRepository) CreateUser(input *domains.Register, passwordHashed string) error {
+func (ur UserRepository) CreateUser(input *domains.Register, passwordHashed string) error {
 	// db := db.SetupMysql()
 	uuid := uuid.New()
 
@@ -53,7 +53,7 @@ func (ur *UserRepository) CreateUser(input *domains.Register, passwordHashed str
 	return nil
 }
 
-func (ur *UserRepository) UpdatePassword(email, newPassword string) error {
+func (ur UserRepository) UpdatePassword(email, newPassword string) error {
 	// db := db.SetupMysql()
 	user, _ := ur.FindbyEmail(email)
 	user.Password = newPassword
@@ -62,9 +62,9 @@ func (ur *UserRepository) UpdatePassword(email, newPassword string) error {
 	return nil
 }
 
-func (ur *UserRepository) Users() ([]*User, error) {
+func (ur UserRepository) Users() ([]User, error) {
 	// db := db.SetupMysql()
-	var users []*User
+	var users []User
 	
 	result := ur.db.Find(&users)
 	if result.Error != nil {
@@ -73,9 +73,9 @@ func (ur *UserRepository) Users() ([]*User, error) {
 	return users, nil
 }
 
-func (ur *UserRepository) GetUserById(userId string) (*User, error) {
+func (ur UserRepository) GetUserById(userId string) (User, error) {
 	// db := db.SetupMysql()
-	var user *User
+	var user User
 
 	result := ur.db.First(&user, "id = ?", userId)
 	if result.Error != nil {
@@ -84,10 +84,10 @@ func (ur *UserRepository) GetUserById(userId string) (*User, error) {
 	return user, nil
 }
 
-func (ur *UserRepository) DeleteUserById(user_id string) error {
+func (ur UserRepository) DeleteUserById(userId string) error {
 	// db := db.SetupMysql()
 
-	result := ur.db.Delete(&User{}, "id = ?", user_id)
+	result := ur.db.Delete(&User{}, "id = ?", userId)
 	if result.Error != nil {
 		fmt.Println(result.Error)
 		return errors.New("Something wrong, cannot delete single user!")

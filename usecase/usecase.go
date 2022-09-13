@@ -6,9 +6,10 @@ import (
 )
 
 type UserUsecaseInterface interface {
-	AllUsers() ([]*repository.User, error)
-	RegisterHandler(*domains.Register) (int, error)
-	LoginHandler(*domains.Login) (repository.User)
-	GetSingleUserHandler()
-	DeleteUserHadler() error
+	AllUsers() ([]repository.User, error)
+	RegisterHandler(input *domains.Register) (int, error)
+	LoginHandler(input *domains.Login) (repository.User, string, error)
+	ChangePasswordHandler(input *domains.ChangePassword) (error)
+	GetSingleUserHandler(userId string) (repository.User, error)
+	DeleteUserHadler(userId string) error
 }
