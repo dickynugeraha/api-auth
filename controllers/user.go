@@ -29,9 +29,9 @@ func (ac *AuthController) Register(c *gin.Context){
 		return
 	}
 
-	statusHttp, err := ac.caseUser.RegisterHandler(&inputRegis)
+	err := ac.caseUser.RegisterHandler(&inputRegis)
 	if err != nil {
-		c.JSON(statusHttp, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error" : err.Error(),
 		})
 		return
@@ -92,7 +92,7 @@ func (ac *AuthController) ChangePassword(c *gin.Context){
 
 func (ac *AuthController) AllUsers(c *gin.Context){
 	fmt.Println("Inner controller")
-	users, err := ac.caseUser.AllUsers()
+	users, err := ac.caseUser.GetUsers()
 	
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{

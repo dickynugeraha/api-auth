@@ -18,5 +18,3 @@ func main() {
 	r := app.Routes(db, userCase)
 	r.Run(":3000")
 }
-
-

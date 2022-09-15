@@ -10,6 +10,7 @@ import (
 
 
 func Routes(db *gorm.DB, uc usecase.UserUsecaseInterface) *gin.Engine {
+
 	c := controllers.NewInitController(uc)
 
 	r := gin.Default()

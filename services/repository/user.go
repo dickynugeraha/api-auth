@@ -1,7 +1,6 @@
 package repository
 
 import (
-	// db "01_REST_Auth/app/config"
 	"01_REST_Auth/domains"
 	"errors"
 	"fmt"
@@ -27,72 +26,66 @@ func NewUserRepository(db *gorm.DB) UserRepositoryInterface {
 	}
 }
 
-func (ur *UserRepository) FindbyEmail(email string) (User, error) {
-	// db := db.SetupMysql()
+func (ur *UserRepository) FindByEmail(email string) (*User) {
 	var user User
 	
 	result := ur.db.First(&user, "email = ?", email);
 	if result.Error != nil {
-		return user, errors.New("Email not found!")
+		return nil
 	}
 
-	return user, nil
+	return &user
 }
 
-func (ur *UserRepository) CreateUser(input *domains.Register, passwordHashed string) error {
-	// db := db.SetupMysql()
+func (ur *UserRepository) FindById(userId string) (*User) {
+	var user User
+
+	result := ur.db.First(&user, "id = ?", userId)
+	if result.Error != nil {
+		return nil
+	}
+	return &user
+}
+
+
+func (ur *UserRepository) CreateUser(input *domains.Register) error {
 	uuid := uuid.New()
 
 	user := User{
 		ID: uuid.String(),
 		Name: input.Name,
 		Email: input.Email,
-		Password: passwordHashed,
+		Password: input.Password,
 	}
 
 	result := ur.db.Create(&user)
 
 	if result.RowsAffected < 0 {
-		return result.Error
+		return errors.New("Cannot create user!")
 	}
 	
 	return nil
 }
 
-func (ur *UserRepository) UpdatePassword(email, newPassword string) error {
-	// db := db.SetupMysql()
-	user, _ := ur.FindbyEmail(email)
-	user.Password = newPassword
+func (ur *UserRepository) UpdatePassword(input *domains.ChangePassword) error {
+	user := ur.FindByEmail(input.Email)
+	user.Password = input.NewPassword
 	ur.db.Save(&user)
 
 	return nil
 }
 
-func (ur *UserRepository) Users() ([]User, error) {
-	// db := db.SetupMysql()
+func (ur *UserRepository) Users() (*[]User) {
 	var users []User
 	
 	result := ur.db.Find(&users)
 	if result.Error != nil {
-		return users, errors.New("Users not found!")
+		return nil
 	}
-	return users, nil
-}
-
-func (ur *UserRepository) GetUserById(userId string) (User, error) {
-	// db := db.SetupMysql()
-	var user User
-
-	result := ur.db.First(&user, "id = ?", userId)
-	if result.Error != nil {
-		return user, errors.New("User by id not found!")
-	}
-	return user, nil
+	return &users
 }
 
 func (ur *UserRepository) DeleteUserById(userId string) error {
-	// db := db.SetupMysql()
-
 	result := ur.db.Delete(&User{}, "id = ?", userId)
 	if result.Error != nil {
 		fmt.Println(result.Error)

@@ -13,97 +13,100 @@ import (
 )
 
 type UserUsecase struct {
-	repo repository.UserRepositoryInterface
+	Repository repository.UserRepositoryInterface
 }
 
-func NewUserUsecase(userRepo repository.UserRepositoryInterface) UserUsecaseInterface {
+func NewUserUsecase(Repository repository.UserRepositoryInterface) UserUsecaseInterface {
 	return &UserUsecase{
-		repo: userRepo,
+		Repository: Repository,
 	}
 }
 
-func (uu *UserUsecase) AllUsers() ([]repository.User, error) {
-	users, err := uu.repo.Users()
+func (uu *UserUsecase) GetUsers() (*[]repository.User, error) {
+	users := uu.Repository.Users()
 
-	if err != nil {
-		return users, err
+	if users == nil {
+		return nil, errors.New("Users not found!")
 	}
+	
 	return users, nil
 }
 
-func (uu *UserUsecase) RegisterHandler(input *domains.Register) (int, error) {
-	err := emailRequired(input.Email)
-	statusHttp := 500
+func (uu *UserUsecase) RegisterHandler(input *domains.Register) (error) {
+	err := EmailRequired(input.Email)
 	if err != nil {
-		statusHttp = 400
-		return statusHttp, err
+		return err
 	}
-	_, err = uu.repo.FindbyEmail(input.Email)
-	if err == nil {
-		statusHttp = 400
-		return statusHttp, errors.New("Email has been used!")
-	}
-	err = passwordRequired(input.Password, input.PasswordConfirm)
+	err = PasswordRequired(input.Password, input.PasswordConfirm)
 	if err != nil {
-		statusHttp = 400
-		return statusHttp, err
+		return err
 	}
-	hashedPassword := passwordHashing(input.Password)
-	err = uu.repo.CreateUser(input, hashedPassword)
+	user := uu.Repository.FindByEmail(input.Email)
+	if user != nil {
+		return errors.New("Email has been used!")
+	}
+	hashedPassword := PasswordHashing(input.Password)
+	input.Password = hashedPassword
+	err = uu.Repository.CreateUser(input)
 	if err != nil {
-		return statusHttp, err
+		return err
 	}
-	return 201, nil
+	return nil
 }
 
-func (uu *UserUsecase) LoginHandler(input *domains.Login) (repository.User, string, error) {
-	err := emailRequired(input.Email)
+func (uu *UserUsecase) LoginHandler(input *domains.Login) (*repository.User, string, error) {
+	err := EmailRequired(input.Email)
 	if err != nil {
-		return repository.User{}, "", err
+		return nil, "", err
 	}
-	user, err := uu.repo.FindbyEmail(input.Email)
-	if err != nil {
-		return user, "",err
+	user := uu.Repository.FindByEmail(input.Email)
+	if user == nil {
+		return nil, "", errors.New("Email not register!")
 	}
-	err = checkPasswordHash(input.Password, user.Password)
+	err = CheckPasswordHash(input.Password, user.Password)
 	if err != nil {
-		return user, "", err
+		return nil, "", err
 	}
 	token, err := generateJWT(user.ID, user.Email)
 	if err != nil {
-		return user, "", err
+		return nil, "", err
 	}
 
 	return user, token, nil
 }
 
 func (uu *UserUsecase) ChangePasswordHandler(input *domains.ChangePassword) error {
-	_, err := uu.repo.FindbyEmail(input.Email);
+	err := EmailRequired(input.Email)
 	if err != nil {
 		return err
 	}
-	err = passwordRequired(input.NewPassword, input.PasswordConfirm);
+	err = PasswordRequired(input.NewPassword, input.PasswordConfirm);
 	if err != nil {
 		return err
 	}
-	newPasswordHash := passwordHashing(input.NewPassword)
-	err =	uu.repo.UpdatePassword(input.Email, newPasswordHash);
+	user := uu.Repository.FindByEmail(input.Email);
+	if user == nil {
+		return errors.New("Email not register!")
+	}
+	newPasswordHash := PasswordHashing(input.NewPassword)
+	input.NewPassword = newPasswordHash
+	err =	uu.Repository.UpdatePassword(input);
 	if err != nil {
 		return err
 	}
-	return err
+	return nil
 }
 
-func (uu *UserUsecase) GetSingleUserHandler(userId string) (repository.User, error) {
-	user, err := uu.repo.GetUserById(userId);
-	if  err != nil {
-		return user, err
+func (uu *UserUsecase) GetSingleUserHandler(userId string) (*repository.User, error) {
+	user := uu.Repository.FindById(userId);
+	if  user == nil {
+		return nil, errors.New("User not found!")
 	}
 	return user, nil
 }
 
 func (uu *UserUsecase) DeleteUserHadler(userId string) error {
-	if err := uu.repo.DeleteUserById(userId); err != nil {
+	if err := uu.Repository.DeleteUserById(userId); err != nil {
 		return err
 	}
 	return nil
@@ -127,14 +130,14 @@ func generateJWT(id string, email string) (string, error){
 	return tokenString, nil
 }
 
-func emailRequired(email string) error {
+func EmailRequired(email string) error {
 	if !strings.Contains(email, "@") || !strings.Contains(email, ".") {
 		return	errors.New("Email does'n contains @ or .")
 	}
 		return nil
 }
 
-func passwordRequired(pass, confPass string) error {
+func PasswordRequired(pass, confPass string) error {
 	if len(pass) < 8 {
 		return errors.New("Password must be greater than 8 characters!")
 	}
@@ -144,7 +147,7 @@ func passwordRequired(pass, confPass string) error {
 	return nil
 }
 
-func checkPasswordHash(passEntered, passHashed string) error {
+func CheckPasswordHash(passEntered, passHashed string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(passHashed), []byte(passEntered))
 
 	if err != nil {
@@ -154,7 +157,7 @@ func checkPasswordHash(passEntered, passHashed string) error {
 	return nil
 }
 
-func passwordHashing(pw string) string {
+func PasswordHashing(pw string) string {
 	pen, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.MinCost)
 
 	if err != nil {
