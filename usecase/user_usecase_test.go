@@ -1,8 +1,8 @@
 package usecase
 
 import (
-	"01_REST_Auth/domains"
-	"01_REST_Auth/services/repository"
+	"api-auth/domains"
+	"api-auth/services/repository"
 	"errors"
 	"testing"
 
@@ -334,7 +334,7 @@ func TestUsecase_DeleteUserHadler(t *testing.T) {
 	})
 }
 
-func TestUsecase_GetUsers(t *testing.T) {
+func TestUsecase_FailGetUsers(t *testing.T) {
 	// type users *[]repository.User
 	
 	t.Run("fail_get_users", func(t *testing.T) {
@@ -348,7 +348,11 @@ func TestUsecase_GetUsers(t *testing.T) {
 		assert.Equal(t, errExpected, err)
 	})
 
-	users := &[]repository.User{
+}
+
+func TestUsecase_SuccessGetUsers(t *testing.T) {
+
+	users := []repository.User{
 		{
 			ID: "uuid1",
 			Name: "kale",
@@ -371,5 +375,4 @@ func TestUsecase_GetUsers(t *testing.T) {
 		assert.NotNil(t, users)
 		assert.Nil(t, err)
 	})
-
 }

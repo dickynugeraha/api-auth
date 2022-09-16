@@ -1,4 +1,4 @@
-module 01_REST_Auth
+module api-auth
 
 go 1.19
 

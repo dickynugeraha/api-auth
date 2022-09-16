@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"01_REST_Auth/domains"
-	"01_REST_Auth/usecase"
+	"api-auth/domains"
+	"api-auth/usecase"
 	"fmt"
 	"net/http"
 

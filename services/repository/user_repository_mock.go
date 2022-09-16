@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"01_REST_Auth/domains"
+	"api-auth/domains"
 	"errors"
 
 	"github.com/stretchr/testify/mock"
@@ -53,13 +53,12 @@ func (repository *UserRepositoryMock) UpdatePassword(input *domains.ChangePasswo
 	return nil
 }
 
-func (repository *UserRepositoryMock) Users() *[]User {
-	var users *[]User
+func (repository *UserRepositoryMock) Users() []User {
+	var users []User
 	args := repository.Mock.Called()
 	if args.Get(0) == nil {
 		return nil
 	}
-
-	users = args.Get(0).(*[]User)
+	users = args.Get(0).([]User)
 	return users
 }

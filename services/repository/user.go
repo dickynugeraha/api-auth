@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"01_REST_Auth/domains"
+	"api-auth/domains"
 	"errors"
 	"fmt"
 
@@ -75,14 +75,14 @@ func (ur *UserRepository) UpdatePassword(input *domains.ChangePassword) error {
 	return nil
 }
 
-func (ur *UserRepository) Users() (*[]User) {
+func (ur *UserRepository) Users() ([]User) {
 	var users []User
 	
 	result := ur.db.Find(&users)
 	if result.Error != nil {
 		return nil
 	}
-	return &users
+	return users
 }
 
 func (ur *UserRepository) DeleteUserById(userId string) error {

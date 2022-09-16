@@ -9,7 +9,7 @@ import (
 
 func SetupMysql() *gorm.DB {
 	USER := "root"
-	PASS := "123QwE"
+	PASS := ""
 	HOST := "localhost"
 	PORT := "3306"
 	DBNAME := "intern_sekolahmu"

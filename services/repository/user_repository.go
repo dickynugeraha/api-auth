@@ -2,7 +2,7 @@ package repository
 
 import (
 	// "context"
-	"01_REST_Auth/domains"
+	"api-auth/domains"
 )
 
 type UserRepositoryInterface interface {
@@ -10,6 +10,6 @@ type UserRepositoryInterface interface {
 	FindById(userId string) (*User)
 	CreateUser(input *domains.Register) (error)
 	UpdatePassword(input *domains.ChangePassword) (error)
-	Users() (*[]User)
+	Users() ([]User)
 	DeleteUserById(userId string) (error)
 }

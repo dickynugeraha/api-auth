@@ -1,10 +1,10 @@
 package main
 
 import (
-	"01_REST_Auth/app"
-	"01_REST_Auth/app/config"
-	"01_REST_Auth/services/repository"
-	"01_REST_Auth/usecase"
+	"api-auth/app"
+	"api-auth/app/config"
+	"api-auth/services/repository"
+	"api-auth/usecase"
 )
 
 

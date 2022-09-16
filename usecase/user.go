@@ -1,8 +1,8 @@
 package usecase
 
 import (
-	"01_REST_Auth/domains"
-	"01_REST_Auth/services/repository"
+	"api-auth/domains"
+	"api-auth/services/repository"
 	"errors"
 	"fmt"
 	"strings"
@@ -22,7 +22,7 @@ func NewUserUsecase(Repository repository.UserRepositoryInterface) UserUsecaseIn
 	}
 }
 
-func (uu *UserUsecase) GetUsers() (*[]repository.User, error) {
+func (uu *UserUsecase) GetUsers() ([]repository.User, error) {
 	users := uu.Repository.Users()
 
 	if users == nil {

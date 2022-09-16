@@ -1,8 +1,8 @@
 package app
 
 import (
-	"01_REST_Auth/controllers"
-	"01_REST_Auth/usecase"
+	"api-auth/controllers"
+	"api-auth/usecase"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
