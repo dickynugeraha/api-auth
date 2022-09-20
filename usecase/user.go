@@ -61,15 +61,15 @@ func (uu *UserUsecase) LoginHandler(input *domains.Login) (*repository.User, str
 	}
 	user := uu.Repository.FindByEmail(input.Email)
 	if user == nil {
-		return nil, "", errors.New("Email not register!")
+		return user, "", errors.New("Email not register!")
 	}
 	err = CheckPasswordHash(input.Password, user.Password)
 	if err != nil {
-		return nil, "", err
+		return user, "", err
 	}
 	token, err := generateJWT(user.ID, user.Email)
 	if err != nil {
-		return nil, "", err
+		return user, "", err
 	}
 
 	return user, token, nil

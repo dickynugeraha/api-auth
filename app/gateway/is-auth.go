@@ -1,50 +1,37 @@
 package gateway
 
-// import (
-// 	"fmt"
-// 	"go/token"
-// 	"net/http"
-// 	"strings"
+import (
+	"fmt"
+	"net/http"
+	"strings"
 
-// 	"github.com/golang-jwt/jwt/v4"
-// )
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
+)
 
-// func IsAuthorization(next http.Handler) http.Handler {
-// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// 		if r.URL.Path == "/login" {
-// 			next.ServeHTTP(w, r)
-// 		}
-
-// 		authHeader := r.Header.Get("Authorization")
-
-// 		if !strings.Contains(authHeader, "Bearer") {
-// 			http.Error(w, "invalid token not bearer", http.StatusBadRequest)
-// 			return
-// 		}
-
-// 		justToken := strings.Replace(authHeader, "Bearer ", "", -1)
-
-// 		token, err := jwt.Parse(justToken, func(token *jwt.Token) (interface{}, error){
-// 			if method, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-// 				return nil, fmt.Errorf("Signin method invalid")
-// 			} else if method != jwt.SigningMethodHS256 {
-// 				return nil, fmt.Errorf("Signin method invalid")
-// 			}
-
-// 			return jwt.SigningMethodHS256, nil
-// 		})
+func IsAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error" : "No header authorization",
+			})
+			return
+		}
 		
-// 		if err != nil {
-// 			http.Error(w, err.Error(), http.StatusBadRequest)
-// 			return 
-// 		}
 
-// 		claims, ok := token.Claims.(jwt.MapClaims)
-// 		if !ok || !token.Valid {
-// 			http.Error(w, err.Error(), http.StatusBadRequest)
-// 			return 
-// 		}
+		token := 	c.Query("token")
+		
+		bearerToken := c.Request.Header.Get("Authorization")
+		if len(strings.Split(bearerToken, " ")) == 2 {
+			token = strings.Split(bearerToken, " ")[1]
+		}
 
-
-// 	})
-// }
+		token1, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+			if _, ok := token1.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Unexpected signin method %v", token1.Header["alg"])
+			}
+			return secret, nil
+		})
+	}
+}

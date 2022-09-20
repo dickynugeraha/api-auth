@@ -199,7 +199,7 @@ func TestUsecase_FailedLoginHandler(t *testing.T){
 
 		user, token, err := userUsecase.LoginHandler(inputUser)
 
-		assert.Nil(t, user)
+		assert.NotNil(t, user)
 		assert.Empty(t, token)
 		assert.NotNil(t, err)
 		assert.Equal(t, err, errors.New("Invalid password!"))
