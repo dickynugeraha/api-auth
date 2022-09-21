@@ -6,7 +6,8 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
+	// "gorm.io/gorm"
+	"github.com/jinzhu/gorm"
 )
 
 type User struct {
@@ -16,20 +17,20 @@ type User struct {
 	Password string `json:"password"`
 }
 
-type UserRepository struct{
+type UserRepository struct {
 	db *gorm.DB
 }
 
 func NewUserRepository(db *gorm.DB) UserRepositoryInterface {
 	return &UserRepository{
-		db: db, 
+		db: db,
 	}
 }
 
-func (ur *UserRepository) FindByEmail(email string) (*User) {
+func (ur *UserRepository) FindByEmail(email string) *User {
 	var user User
-	
-	result := ur.db.First(&user, "email = ?", email);
+
+	result := ur.db.First(&user, "email = ?", email)
 	if result.Error != nil {
 		return nil
 	}
@@ -37,7 +38,7 @@ func (ur *UserRepository) FindByEmail(email string) (*User) {
 	return &user
 }
 
-func (ur *UserRepository) FindById(userId string) (*User) {
+func (ur *UserRepository) FindById(userId string) *User {
 	var user User
 
 	result := ur.db.First(&user, "id = ?", userId)
@@ -47,14 +48,13 @@ func (ur *UserRepository) FindById(userId string) (*User) {
 	return &user
 }
 
-
 func (ur *UserRepository) CreateUser(input *domains.Register) error {
 	uuid := uuid.New()
 
 	user := User{
-		ID: uuid.String(),
-		Name: input.Name,
-		Email: input.Email,
+		ID:       uuid.String(),
+		Name:     input.Name,
+		Email:    input.Email,
 		Password: input.Password,
 	}
 
@@ -63,7 +63,7 @@ func (ur *UserRepository) CreateUser(input *domains.Register) error {
 	if result.RowsAffected < 0 {
 		return errors.New("Cannot create user!")
 	}
-	
+
 	return nil
 }
 
@@ -75,9 +75,9 @@ func (ur *UserRepository) UpdatePassword(input *domains.ChangePassword) error {
 	return nil
 }
 
-func (ur *UserRepository) Users() ([]User) {
+func (ur *UserRepository) Users() []User {
 	var users []User
-	
+
 	result := ur.db.Find(&users)
 	if result.Error != nil {
 		return nil
