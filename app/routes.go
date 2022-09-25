@@ -5,7 +5,6 @@ import (
 	"api-auth/usecase"
 
 	"github.com/gin-gonic/gin"
-	// "gorm.io/gorm"
 	"github.com/jinzhu/gorm"
 )
 
@@ -22,7 +21,7 @@ func Routes(db *gorm.DB, uc usecase.UserUsecaseInterface) *gin.Engine {
 	r.POST("/register", c.Register)
 	r.POST("/change-password", c.ChangePassword)
 	r.GET("/users", c.AllUsers)
-	r.GET("/user/:user_id", c.SingleUser)
+	r.GET("/user/:userId", c.SingleUser)
 	r.DELETE("/user", c.DeleteUser)
 
 	return r

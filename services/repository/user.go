@@ -49,10 +49,8 @@ func (ur *UserRepository) FindById(userId string) *User {
 }
 
 func (ur *UserRepository) CreateUser(input *domains.Register) error {
-	uuid := uuid.New()
-
 	user := User{
-		ID:       uuid.String(),
+		ID:       uuid.New().String(),
 		Name:     input.Name,
 		Email:    input.Email,
 		Password: input.Password,
@@ -69,20 +67,24 @@ func (ur *UserRepository) CreateUser(input *domains.Register) error {
 
 func (ur *UserRepository) UpdatePassword(input *domains.ChangePassword) error {
 	user := ur.FindByEmail(input.Email)
+	if user == nil {
+		return errors.New("Email not register!")
+	}
+
 	user.Password = input.NewPassword
 	ur.db.Save(&user)
 
 	return nil
 }
 
-func (ur *UserRepository) Users() []User {
+func (ur *UserRepository) Users() ([]User, error) {
 	var users []User
 
 	result := ur.db.Find(&users)
 	if result.Error != nil {
-		return nil
+		return nil, errors.New("")
 	}
-	return users
+	return users, nil
 }
 
 func (ur *UserRepository) DeleteUserById(userId string) error {

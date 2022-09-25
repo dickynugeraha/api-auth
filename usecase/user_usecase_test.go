@@ -275,17 +275,16 @@ func TestUserUsecase_FailedChangePasswordHandler(t *testing.T) {
 		{
 			name: "user_fail_4",
 			request: &domains.ChangePassword{
-				Email:           "kale@gmail.com",
+				Email:           "email_not_found@gmail.com",
 				NewPassword:     "password",
 				PasswordConfirm: "password",
 			},
-			expected: errors.New("Email not register!"),
+			expected: errors.New("Cannot update password!"),
 		},
 	}
 
 	for _, test := range tests {
-		userRepository.Mock.On("FindByEmail", test.request.Email).Return(nil)
-		userRepository.Mock.On("UpdatePassword", test.request).Return(errors.New(""))
+		userRepository.Mock.On("UpdatePassword", test.request).Return(errors.New("Error"))
 		err := userUsecase.ChangePasswordHandler(test.request)
 		assert.NotNil(t, err)
 		assert.Equal(t, err, test.expected)
@@ -298,27 +297,20 @@ func TestUserUsecase_SuccessChangePasswordHandler(t *testing.T) {
 		NewPassword:     "password",
 		PasswordConfirm: "password",
 	}
-	user1 := repository.User{
-		ID:       "id",
-		Name:     "kale",
-		Email:    "kale@gmail.com",
-		Password: "old_password",
-	}
 
-	userRepository.Mock.On("FindByEmail", userInput.Email).Return(user1)
 	userRepository.Mock.On("UpdatePassword", userInput).Return(nil)
 	err := userUsecase.ChangePasswordHandler(userInput)
 
 	assert.Nil(t, err)
 }
 
-func TestUserUsecase_DeleteUserHadler(t *testing.T) {
+func TestUserUsecase_DeleteUserHandler(t *testing.T) {
 	userId := "random_uuid"
 
 	t.Run("failed_delete_user", func(t *testing.T) {
 		userRepository.Mock.On("DeleteUserById", userId).Return(errors.New(""))
 
-		err := userUsecase.DeleteUserHadler(userId)
+		err := userUsecase.DeleteUserHandler(userId)
 		assert.NotNil(t, err)
 
 	})
@@ -327,24 +319,21 @@ func TestUserUsecase_DeleteUserHadler(t *testing.T) {
 	t.Run("success_delete_user", func(t *testing.T) {
 		userRepository.Mock.On("DeleteUserById", userId).Return(nil)
 
-		err := userUsecase.DeleteUserHadler(userId)
+		err := userUsecase.DeleteUserHandler(userId)
 		assert.Nil(t, err)
 	})
 }
 
 func TestUserUsecase_FailGetUsers(t *testing.T) {
-	// type users *[]repository.User
 
-	t.Run("fail_get_users", func(t *testing.T) {
-		userRepository.Mock.On("Users").Return(nil)
+	userRepository.Mock.On("Users").Return(nil, errors.New(""))
 
-		users, err := userUsecase.GetUsers()
-		errExpected := errors.New("Users not found!")
+	users, err := userUsecase.GetUsers()
+	errExpected := errors.New("Users not found!")
 
-		assert.NotNil(t, err)
-		assert.Nil(t, users)
-		assert.Equal(t, errExpected, err)
-	})
+	assert.NotNil(t, err)
+	assert.Nil(t, users)
+	assert.Equal(t, errExpected, err)
 
 }
 
@@ -361,16 +350,16 @@ func TestUserUsecase_SuccessGetUsers(t *testing.T) {
 			ID:       "uuid2",
 			Name:     "kal2",
 			Email:    "kale2@gmail.com",
-			Password: "password",
+			Password: "password2",
 		},
 	}
 
-	t.Run("success_get_users", func(t *testing.T) {
-		userRepository.Mock.On("Users").Return(users)
+	userRepository.Mock.On("Users").Return(users, nil)
 
-		users, err := userUsecase.GetUsers()
+	users, err := userUsecase.GetUsers()
 
-		assert.NotNil(t, users)
-		assert.Nil(t, err)
-	})
+	// assert.Nil(t, users)
+	// assert.NotNil(t, err)
+	assert.NotEmpty(t, users)
+	assert.Nil(t, err)
 }

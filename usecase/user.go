@@ -23,16 +23,16 @@ func NewUserUsecase(Repository repository.UserRepositoryInterface) UserUsecaseIn
 }
 
 func (uu *UserUsecase) GetUsers() ([]repository.User, error) {
-	users := uu.Repository.Users()
+	users, err := uu.Repository.Users()
 
-	if users == nil {
+	if err != nil {
 		return nil, errors.New("Users not found!")
 	}
-	
+
 	return users, nil
 }
 
-func (uu *UserUsecase) RegisterHandler(input *domains.Register) (error) {
+func (uu *UserUsecase) RegisterHandler(input *domains.Register) error {
 	err := EmailRequired(input.Email)
 	if err != nil {
 		return err
@@ -80,17 +80,13 @@ func (uu *UserUsecase) ChangePasswordHandler(input *domains.ChangePassword) erro
 	if err != nil {
 		return err
 	}
-	err = PasswordRequired(input.NewPassword, input.PasswordConfirm);
+	err = PasswordRequired(input.NewPassword, input.PasswordConfirm)
 	if err != nil {
 		return err
 	}
-	user := uu.Repository.FindByEmail(input.Email);
-	if user == nil {
-		return errors.New("Email not register!")
-	}
 	newPasswordHash := PasswordHashing(input.NewPassword)
 	input.NewPassword = newPasswordHash
-	err =	uu.Repository.UpdatePassword(input);
+	err = uu.Repository.UpdatePassword(input)
 	if err != nil {
 		return err
 	}
@@ -98,21 +94,21 @@ func (uu *UserUsecase) ChangePasswordHandler(input *domains.ChangePassword) erro
 }
 
 func (uu *UserUsecase) GetSingleUserHandler(userId string) (*repository.User, error) {
-	user := uu.Repository.FindById(userId);
-	if  user == nil {
+	user := uu.Repository.FindById(userId)
+	if user == nil {
 		return nil, errors.New("User not found!")
 	}
 	return user, nil
 }
 
-func (uu *UserUsecase) DeleteUserHadler(userId string) error {
+func (uu *UserUsecase) DeleteUserHandler(userId string) error {
 	if err := uu.Repository.DeleteUserById(userId); err != nil {
 		return err
 	}
 	return nil
 }
 
-func generateJWT(id string, email string) (string, error){
+func generateJWT(id string, email string) (string, error) {
 	var mySigningKey = []byte("secretkey")
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
@@ -132,9 +128,9 @@ func generateJWT(id string, email string) (string, error){
 
 func EmailRequired(email string) error {
 	if !strings.Contains(email, "@") || !strings.Contains(email, ".") {
-		return	errors.New("Email does'n contains @ or .")
+		return errors.New("Email does'n contains @ or .")
 	}
-		return nil
+	return nil
 }
 
 func PasswordRequired(pass, confPass string) error {
