@@ -81,9 +81,11 @@ func (ur *UserRepository) Users() ([]User, error) {
 	var users []User
 
 	result := ur.db.Find(&users)
+
 	if result.Error != nil {
 		return nil, errors.New("")
 	}
+
 	return users, nil
 }
 

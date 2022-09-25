@@ -354,12 +354,10 @@ func TestUserUsecase_SuccessGetUsers(t *testing.T) {
 		},
 	}
 
-	userRepository.Mock.On("Users").Return(users, nil)
+	userRepository.Mock.On("Users").Return(users, nil).Once()
 
 	users, err := userUsecase.GetUsers()
 
-	// assert.Nil(t, users)
-	// assert.NotNil(t, err)
 	assert.NotEmpty(t, users)
 	assert.Nil(t, err)
 }

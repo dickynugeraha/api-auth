@@ -296,8 +296,8 @@ func TestSuccessGetAllUsers(t *testing.T) {
 func TestFailGetAllUsers(t *testing.T) {
 	r := SetRouter()
 	r.GET("/users", userController.AllUsers)
+	userUsecase.Mock.On("GetUsers").Return(nil, errors.New("Error"))
 
-	userUsecase.Mock.On("GetUsers").Return(nil, errors.New(""))
 	req, _ := http.NewRequest("GET", "/users", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
@@ -306,13 +306,51 @@ func TestFailGetAllUsers(t *testing.T) {
 }
 
 func TestSuccessGetSingleUser(t *testing.T) {
+	userId := domains.UserId{
+		ID: "valid_uuid",
+	}
+
+	r := SetRouter()
+	r.GET("/user/:userId", userController.SingleUser)
 
 	user := &repository.User{
-		ID:       "uuid",
+		ID:       "valid_uuid",
 		Name:     "kale",
 		Email:    "kale@gmail.com",
 		Password: "password",
 	}
-	mockResponse := `"message": "Successflly fetch single user","user":{"id":"%s","name":"%s","email":"%s","password":"%s"}},`
+
+	userUsecase.Mock.On("GetSingleUserHandler", userId.ID).Return(user, nil)
+
+	mockResponse := `{"message":"Successflly fetch single user","user":{"id":"%s","name":"%s","email":"%s","password":"%s"}}`
 	mockResponse = fmt.Sprintf(mockResponse, user.ID, user.Name, user.Email, user.Password)
+
+	jsonValue, _ := json.Marshal(userId)
+	req, _ := http.NewRequest("GET", "/user/"+userId.ID, bytes.NewBuffer(jsonValue))
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	res, _ := ioutil.ReadAll(w.Body)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, string(res), mockResponse)
+
+}
+
+func TestFailGetSingleUser(t *testing.T) {
+	userId := domains.UserId{
+		ID: "invalid_uuid",
+	}
+
+	r := SetRouter()
+	r.GET("/user/:userId", userController.SingleUser)
+
+	userUsecase.Mock.On("GetSingleUserHandler", userId.ID).Return(nil, errors.New(""))
+
+	jsonValue, _ := json.Marshal(userId)
+	req, _ := http.NewRequest("GET", "/user/"+userId.ID, bytes.NewBuffer(jsonValue))
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+
 }

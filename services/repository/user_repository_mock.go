@@ -53,31 +53,33 @@ func (repository *UserRepositoryMock) UpdatePassword(input *domains.ChangePasswo
 	return nil
 }
 
-func (repository *UserRepositoryMock) Users() (users []User, err error) {
+// func (repository *UserRepositoryMock) Users() (users []User, err error) {
+// 	args := repository.Mock.Called()
+
+// 	if rf, ok := args.Get(0).(func() []User); ok {
+// 		users = rf()
+// 	} else {
+// 		if args.Get(0) != nil {
+// 			users = args.Get(0).([]User)
+// 		}
+// 	}
+
+// 	if rf, ok := args.Get(1).(func() error); ok {
+// 		err = rf()
+// 	} else {
+// 		err = args.Error(1)
+// 	}
+
+// 	return
+// }
+
+func (repository *UserRepositoryMock) Users() ([]User, error) {
 	args := repository.Mock.Called()
 
-	if rf, ok := args.Get(0).(func() []User); ok {
-		users = rf()
+	if args.Get(0) == nil {
+		return nil, errors.New("users not found")
 	} else {
-		if args.Get(0) != nil {
-			users = args.Get(0).([]User)
-		}
+		users := args.Get(0).([]User)
+		return users, nil
 	}
-
-	if rf, ok := args.Get(1).(func() error); ok {
-		err = rf()
-	} else {
-		err = args.Error(1)
-	}
-
-	return
 }
-
-// func (repository *UserRepositoryMock) Users() []User {
-// 	args := repository.Mock.Called()
-// 	if args.Get(0) == nil {
-// 		return nil
-// 	}
-// 	users := args.Get(0).([]User)
-// 	return users
-// }

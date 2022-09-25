@@ -25,7 +25,7 @@ func NewUserUsecase(Repository repository.UserRepositoryInterface) UserUsecaseIn
 func (uu *UserUsecase) GetUsers() ([]repository.User, error) {
 	users, err := uu.Repository.Users()
 
-	if err != nil {
+	if err != nil || users == nil {
 		return nil, errors.New("Users not found!")
 	}
 

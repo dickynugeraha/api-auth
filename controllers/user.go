@@ -110,7 +110,7 @@ func (ac *AuthController) SingleUser(c *gin.Context) {
 	userId := c.Param("userId")
 	user, err := ac.caseUser.GetSingleUserHandler(userId)
 	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{
+		c.JSON(http.StatusNotFound, gin.H{
 			"error": err.Error(),
 		})
 		return
