@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"api-auth/domains"
+	mokz "api-auth/mock"
 	"api-auth/services/repository"
-	"api-auth/usecase"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-var userUsecase = &usecase.UserUsecaseMock{Mock: mock.Mock{}}
+var userUsecase = &mokz.UserUsecaseMock{Mock: mock.Mock{}}
 var userController = AuthController{caseUser: userUsecase}
 
 func SetRouter() *gin.Engine {

@@ -1,4 +1,4 @@
-package usecase
+package mock
 
 import (
 	"api-auth/domains"

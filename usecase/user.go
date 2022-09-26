@@ -1,15 +1,10 @@
 package usecase
 
 import (
+	"api-auth/app/helper"
 	"api-auth/domains"
 	"api-auth/services/repository"
 	"errors"
-	"fmt"
-	"strings"
-	"time"
-
-	"github.com/golang-jwt/jwt/v4"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserUsecase struct {
@@ -33,11 +28,12 @@ func (uu *UserUsecase) GetUsers() ([]repository.User, error) {
 }
 
 func (uu *UserUsecase) RegisterHandler(input *domains.Register) error {
-	err := EmailRequired(input.Email)
+
+	err := helper.EmailRequired(input.Email)
 	if err != nil {
 		return err
 	}
-	err = PasswordRequired(input.Password, input.PasswordConfirm)
+	err = helper.PasswordRequired(input.Password, input.PasswordConfirm)
 	if err != nil {
 		return err
 	}
@@ -45,8 +41,7 @@ func (uu *UserUsecase) RegisterHandler(input *domains.Register) error {
 	if user != nil {
 		return errors.New("Email has been used!")
 	}
-	hashedPassword := PasswordHashing(input.Password)
-	input.Password = hashedPassword
+	input.Password = helper.PasswordHashing(input.Password)
 	err = uu.Repository.CreateUser(input)
 	if err != nil {
 		return err
@@ -55,7 +50,7 @@ func (uu *UserUsecase) RegisterHandler(input *domains.Register) error {
 }
 
 func (uu *UserUsecase) LoginHandler(input *domains.Login) (*repository.User, string, error) {
-	err := EmailRequired(input.Email)
+	err := helper.EmailRequired(input.Email)
 	if err != nil {
 		return nil, "", err
 	}
@@ -63,11 +58,11 @@ func (uu *UserUsecase) LoginHandler(input *domains.Login) (*repository.User, str
 	if user == nil {
 		return user, "", errors.New("Email not register!")
 	}
-	err = CheckPasswordHash(input.Password, user.Password)
+	err = helper.CheckPasswordHash(input.Password, user.Password)
 	if err != nil {
 		return user, "", err
 	}
-	token, err := generateJWT(user.ID, user.Email)
+	token, err := helper.GenerateJWT(user.ID, user.Email)
 	if err != nil {
 		return user, "", err
 	}
@@ -76,15 +71,15 @@ func (uu *UserUsecase) LoginHandler(input *domains.Login) (*repository.User, str
 }
 
 func (uu *UserUsecase) ChangePasswordHandler(input *domains.ChangePassword) error {
-	err := EmailRequired(input.Email)
+	err := helper.EmailRequired(input.Email)
 	if err != nil {
 		return err
 	}
-	err = PasswordRequired(input.NewPassword, input.PasswordConfirm)
+	err = helper.PasswordRequired(input.NewPassword, input.PasswordConfirm)
 	if err != nil {
 		return err
 	}
-	newPasswordHash := PasswordHashing(input.NewPassword)
+	newPasswordHash := helper.PasswordHashing(input.NewPassword)
 	input.NewPassword = newPasswordHash
 	err = uu.Repository.UpdatePassword(input)
 	if err != nil {
@@ -106,58 +101,4 @@ func (uu *UserUsecase) DeleteUserHandler(userId string) error {
 		return err
 	}
 	return nil
-}
-
-func generateJWT(id string, email string) (string, error) {
-	var mySigningKey = []byte("secretkey")
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-
-	claims["authorized"] = true
-	claims["id"] = id
-	claims["email"] = email
-	claims["exp"] = time.Now().Add(time.Hour * 3).Unix()
-
-	tokenString, err := token.SignedString(mySigningKey)
-	if err != nil {
-		fmt.Errorf("Something Went Wrong: %s", err.Error())
-		return "", err
-	}
-	return tokenString, nil
-}
-
-func EmailRequired(email string) error {
-	if !strings.Contains(email, "@") || !strings.Contains(email, ".") {
-		return errors.New("Email does'n contains @ or .")
-	}
-	return nil
-}
-
-func PasswordRequired(pass, confPass string) error {
-	if len(pass) < 8 {
-		return errors.New("Password must be greater than 8 characters!")
-	}
-	if strings.Compare(pass, confPass) != 0 {
-		return errors.New("Password not match!")
-	}
-	return nil
-}
-
-func CheckPasswordHash(passEntered, passHashed string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(passHashed), []byte(passEntered))
-
-	if err != nil {
-		return errors.New("Invalid password!")
-	}
-
-	return nil
-}
-
-func PasswordHashing(pw string) string {
-	pen, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.MinCost)
-
-	if err != nil {
-		return "Cannot hash password"
-	}
-	return string(pen)
 }
