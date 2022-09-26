@@ -47,7 +47,7 @@ func (ac *AuthController) Login(c *gin.Context) {
 	var inputLogin domains.Login
 
 	if err := c.ShouldBindJSON(&inputLogin); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
@@ -130,7 +130,7 @@ func (ac *AuthController) DeleteUser(c *gin.Context) {
 			"error": err.Error(),
 		})
 	}
-
+ 
 	err = ac.caseUser.DeleteUserHandler(inputId.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

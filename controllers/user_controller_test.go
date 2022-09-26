@@ -44,7 +44,10 @@ func TestSuccessRegister(t *testing.T) {
 	userUsecase.Mock.On("RegisterHandler", &input).Return(nil)
 
 	jsonValue, _ := json.Marshal(input)
-	req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonValue))
+	req, err := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonValue))
+	if err != nil {
+		t.Fatalf("Couldn't create request: %v\n", err)
+	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -65,7 +68,12 @@ func TestFailRegister(t *testing.T) {
 			Password: "password",
 		}
 		jsonValue, _ := json.Marshal(input)
-		req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonValue))
+		req, err := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonValue))
+
+		if err != nil {
+			t.Fatalf("Couldn't create request: %v\n", err)
+		}
+		
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
 
@@ -83,7 +91,11 @@ func TestFailRegister(t *testing.T) {
 		userUsecase.Mock.On("RegisterHandler", &input).Return(errors.New(""))
 
 		jsonValue, _ := json.Marshal(input)
-		req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonValue))
+		req, err := http.NewRequest("POST", "/register", bytes.NewBuffer(jsonValue))
+
+		if err != nil {
+		t.Fatalf("Couldn't create request: %v\n", err)
+	}
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
 
@@ -114,7 +126,10 @@ func TestSuccessLogin(t *testing.T) {
 	userUsecase.Mock.On("LoginHandler", &input).Return(user, "valid_token", nil)
 
 	jsonValue, _ := json.Marshal(input)
-	req, _ := http.NewRequest("POST", "/login", bytes.NewBuffer(jsonValue))
+	req, err := http.NewRequest("POST", "/login", bytes.NewBuffer(jsonValue))
+	if err != nil {
+		t.Fatalf("Couldn't create request: %v\n", err)
+	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -138,7 +153,10 @@ func TestFailLogin(t *testing.T) {
 		userUsecase.Mock.On("LoginHandler", &input).Return(nil, "", errors.New(""))
 
 		jsonValue, _ := json.Marshal(input)
-		req, _ := http.NewRequest("POST", "/login", bytes.NewBuffer(jsonValue))
+		req, err := http.NewRequest("POST", "/login", bytes.NewBuffer(jsonValue))
+		if err != nil {
+		t.Fatalf("Couldn't create request: %v\n", err)
+	}
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
 
@@ -155,7 +173,10 @@ func TestFailLogin(t *testing.T) {
 		userUsecase.Mock.On("LoginHandler", &input).Return(nil, "", errors.New(""))
 
 		jsonValue, _ := json.Marshal(input)
-		req, _ := http.NewRequest("POST", "/login", bytes.NewBuffer(jsonValue))
+		req, err := http.NewRequest("POST", "/login", bytes.NewBuffer(jsonValue))
+		if err != nil {
+		t.Fatalf("Couldn't create request: %v\n", err)
+	}
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
 
@@ -178,7 +199,10 @@ func TestSuccessChangePassword(t *testing.T) {
 	userUsecase.Mock.On("ChangePasswordHandler", &input).Return(nil)
 
 	jsonValue, _ := json.Marshal(input)
-	req, _ := http.NewRequest("POST", "/change-password", bytes.NewBuffer(jsonValue))
+	req, err := http.NewRequest("POST", "/change-password", bytes.NewBuffer(jsonValue))
+	if err != nil {
+		t.Fatalf("Couldn't create request: %v\n", err)
+	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -202,7 +226,10 @@ func TestFailChangePassword(t *testing.T) {
 	userUsecase.Mock.On("ChangePasswordHandler", &input).Return(errors.New(""))
 
 	jsonValue, _ := json.Marshal(input)
-	req, _ := http.NewRequest("POST", "/change-password", bytes.NewBuffer(jsonValue))
+	req, err := http.NewRequest("POST", "/change-password", bytes.NewBuffer(jsonValue))
+	if err != nil {
+		t.Fatalf("Couldn't create request: %v\n", err)
+	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -221,7 +248,10 @@ func TestSuccessDeleteUser(t *testing.T) {
 	userUsecase.Mock.On("DeleteUserHandler", input.ID).Return(nil)
 
 	jsonValue, _ := json.Marshal(input)
-	req, _ := http.NewRequest("DELETE", "/user", bytes.NewBuffer(jsonValue))
+	req, err := http.NewRequest("DELETE", "/user", bytes.NewBuffer(jsonValue))
+	if err != nil {
+		t.Fatalf("Couldn't create request: %v\n", err)
+	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -242,11 +272,29 @@ func TestFailDeleteUser(t *testing.T) {
 	userUsecase.Mock.On("DeleteUserHandler", input.ID).Return(errors.New(""))
 
 	jsonValue, _ := json.Marshal(input)
-	req, _ := http.NewRequest("DELETE", "/user", bytes.NewBuffer(jsonValue))
+	req, err := http.NewRequest("DELETE", "/user", bytes.NewBuffer(jsonValue))
+	if err != nil {
+		t.Fatalf("Couldn't create request: %v\n", err)
+	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestFailGetAllUsers(t *testing.T) {
+	r := SetRouter()
+	r.GET("/users", userController.AllUsers)
+	userUsecase.Mock.On("GetUsers").Return(nil, errors.New("Error")).Once()
+
+	req, err := http.NewRequest("GET", "/users", nil)
+	if err != nil {
+		t.Fatalf("Couldn't create request: %v\n", err)
+	}
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
 func TestSuccessGetAllUsers(t *testing.T) {
@@ -279,9 +327,12 @@ func TestSuccessGetAllUsers(t *testing.T) {
 	r := SetRouter()
 	r.GET("/users", userController.AllUsers)
 
-	userUsecase.Mock.On("GetUsers").Return(users, nil)
+	userUsecase.Mock.On("GetUsers").Return(users, nil).Once()
 
-	req, _ := http.NewRequest("GET", "/users", nil)
+	req, err := http.NewRequest("GET", "/users", nil)
+	if err != nil {
+		t.Fatalf("Couldn't create request: %v\n", err)
+	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
@@ -293,17 +344,7 @@ func TestSuccessGetAllUsers(t *testing.T) {
 	assert.Equal(t, mockResponse, resManip)
 }
 
-func TestFailGetAllUsers(t *testing.T) {
-	r := SetRouter()
-	r.GET("/users", userController.AllUsers)
-	userUsecase.Mock.On("GetUsers").Return(nil, errors.New("Error"))
 
-	req, _ := http.NewRequest("GET", "/users", nil)
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusNotFound, w.Code)
-}
 
 func TestSuccessGetSingleUser(t *testing.T) {
 	userId := domains.UserId{
@@ -326,7 +367,10 @@ func TestSuccessGetSingleUser(t *testing.T) {
 	mockResponse = fmt.Sprintf(mockResponse, user.ID, user.Name, user.Email, user.Password)
 
 	jsonValue, _ := json.Marshal(userId)
-	req, _ := http.NewRequest("GET", "/user/"+userId.ID, bytes.NewBuffer(jsonValue))
+	req, err := http.NewRequest("GET", "/user/"+userId.ID, bytes.NewBuffer(jsonValue))
+	if err != nil {
+		t.Fatalf("Couldn't create request: %v\n", err)
+	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	res, _ := ioutil.ReadAll(w.Body)
@@ -347,7 +391,10 @@ func TestFailGetSingleUser(t *testing.T) {
 	userUsecase.Mock.On("GetSingleUserHandler", userId.ID).Return(nil, errors.New(""))
 
 	jsonValue, _ := json.Marshal(userId)
-	req, _ := http.NewRequest("GET", "/user/"+userId.ID, bytes.NewBuffer(jsonValue))
+	req, err := http.NewRequest("GET", "/user/"+userId.ID, bytes.NewBuffer(jsonValue))
+	if err != nil {
+		t.Fatalf("Couldn't create request: %v\n", err)
+	}
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 

@@ -62,10 +62,7 @@ func (uu *UserUsecase) LoginHandler(input *domains.Login) (*repository.User, str
 	if err != nil {
 		return user, "", err
 	}
-	token, err := helper.GenerateJWT(user.ID, user.Email)
-	if err != nil {
-		return user, "", err
-	}
+	token, _ := helper.GenerateJWT(user.ID, user.Email)
 
 	return user, token, nil
 }

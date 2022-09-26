@@ -79,6 +79,9 @@ func (s *Suite) TestUserRepository_FailFindByEmail() {
 	email := "user_not_found@gmail.com"
 	query := "SELECT * FROM `users` WHERE (email = ?)"
 
+	fmt.Println("--------------------------------------------------------------------------------------------------------")
+	fmt.Println(query)
+
 	s.mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(email).WillReturnError(fmt.Errorf("email not found!"))
 
 	user := s.userRepository.FindByEmail(email)
