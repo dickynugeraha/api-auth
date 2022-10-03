@@ -2,13 +2,13 @@ package app
 
 import (
 	"api-auth/controllers"
-	"api-auth/usecase"
+	"api-auth/services/logic"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 )
 
-func Routes(db *gorm.DB, uc usecase.UserUsecaseInterface) *gin.Engine {
+func Routes(db *gorm.DB, uc logic.UserUsecaseInterface) *gin.Engine {
 
 	c := controllers.NewInitController(uc)
 

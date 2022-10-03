@@ -47,8 +47,8 @@ func (repository *UserRepositoryMock) DeleteUserById(userId string) error {
 	return nil
 }
 
-func (repository *UserRepositoryMock) UpdatePassword(input *domains.ChangePassword) error {
-	args := repository.Mock.Called(input)
+func (repository *UserRepositoryMock) UpdatePassword(input *domains.ChangePassword, userId string) error {
+	args := repository.Mock.Called(input,userId)
 	if args.Get(0) != nil {
 		return errors.New("Cannot update password!")
 	}

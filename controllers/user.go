@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"api-auth/domains"
-	"api-auth/usecase"
+	"api-auth/services/logic"
 	"fmt"
 	"net/http"
 
@@ -10,10 +10,10 @@ import (
 )
 
 type AuthController struct {
-	caseUser usecase.UserUsecaseInterface
+	caseUser logic.UserUsecaseInterface
 }
 
-func NewInitController(caseUser usecase.UserUsecaseInterface) *AuthController {
+func NewInitController(caseUser logic.UserUsecaseInterface) *AuthController {
 	return &AuthController{
 		caseUser: caseUser,
 	}
