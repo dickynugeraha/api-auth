@@ -31,8 +31,8 @@ func (repository *UserRepositoryMock) FindById(userId string) *repo.User {
 	return &user
 }
 
-func (repository *UserRepositoryMock) CreateUser(input *domains.Register) error {
-	args := repository.Mock.Called(input)
+func (repository *UserRepositoryMock) CreateUser(uuid string, input *domains.Register) error {
+	args := repository.Mock.Called(uuid, input)
 	if args.Get(0) != nil {
 		return errors.New("Cannot create user!")
 	}
@@ -48,7 +48,7 @@ func (repository *UserRepositoryMock) DeleteUserById(userId string) error {
 }
 
 func (repository *UserRepositoryMock) UpdatePassword(input *domains.ChangePassword, userId string) error {
-	args := repository.Mock.Called(input,userId)
+	args := repository.Mock.Called(input, userId)
 	if args.Get(0) != nil {
 		return errors.New("Cannot update password!")
 	}

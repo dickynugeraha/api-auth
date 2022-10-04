@@ -4,7 +4,6 @@ import (
 	"api-auth/domains"
 	"errors"
 
-	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 )
 
@@ -46,11 +45,11 @@ func (ur *UserRepository) FindById(userId string) *User {
 	return &user
 }
 
-func (ur *UserRepository) CreateUser(input *domains.Register) error {
+func (ur *UserRepository) CreateUser(uuid string, input *domains.Register) error {
 	user := User{}
 
 	newUser := User{
-		ID:       uuid.New().String(),
+		ID:       uuid,
 		Name:     input.Name,
 		Email:    input.Email,
 		Password: input.Password,
@@ -58,21 +57,26 @@ func (ur *UserRepository) CreateUser(input *domains.Register) error {
 
 	result := ur.db.Model(&user).Create(&newUser)
 
-	if result.RowsAffected < 0 {
+	if result.Error != nil {
 		return errors.New("Cannot create user!")
 	}
 
 	return nil
 }
 
-func (ur *UserRepository) UpdatePassword(input *domains.ChangePassword, userId string) error {
+func (ur *UserRepository) UpdatePassword(input *domains.ChangePassword, userId string) (err error) {
 
-	ur.db.Model(&User{}).Where("id = ?", userId).Update("password", input.NewPassword)
+	result := ur.db.Model(&User{}).Where("id = ?", userId).Update("password", input.NewPassword)
 	// db.Model(User{}).Where("role = ?", "admin").Updates(User{Name: "hello", Age: 18})
 	// user.Password = input.NewPassword
 	// ur.db.Save(&user)
 
-	return nil
+	err = result.Error
+
+	if err != nil {
+		return 
+	}
+	return 
 }
 
 func (ur *UserRepository) Users() ([]User, error) {
@@ -90,8 +94,8 @@ func (ur *UserRepository) Users() ([]User, error) {
 func (ur *UserRepository) DeleteUserById(userId string) error {
 	user := User{}
 
-	result := ur.db.Where("id = " + userId).Delete(&user)
-	if result.RowsAffected < 0 {
+	result := ur.db.Where("id = ?", userId).Delete(&user)
+	if result.Error != nil {
 		return errors.New("Something wrong, cannot delete single user!")
 	}
 	return nil

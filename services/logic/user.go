@@ -5,6 +5,8 @@ import (
 	"api-auth/domains"
 	"api-auth/services/repository"
 	"errors"
+
+	"github.com/google/uuid"
 )
 
 type UserUsecase struct {
@@ -42,7 +44,8 @@ func (uu *UserUsecase) RegisterHandler(input *domains.Register) error {
 		return errors.New("Email has been used!")
 	}
 	input.Password = helper.PasswordHashing(input.Password)
-	err = uu.Repository.CreateUser(input)
+	uuid := uuid.New().String()
+	err = uu.Repository.CreateUser(uuid, input)
 	if err != nil {
 		return err
 	}
