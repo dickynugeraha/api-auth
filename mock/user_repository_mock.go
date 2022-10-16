@@ -31,8 +31,8 @@ func (repository *UserRepositoryMock) FindById(userId string) *repo.User {
 	return &user
 }
 
-func (repository *UserRepositoryMock) CreateUser(uuid string, input *domains.Register) error {
-	args := repository.Mock.Called(uuid, input)
+func (repository *UserRepositoryMock) CreateUser(input *domains.Register) error {
+	args := repository.Mock.Called(input)
 	if args.Get(0) != nil {
 		return errors.New("Cannot create user!")
 	}

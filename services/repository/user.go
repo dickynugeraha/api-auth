@@ -4,6 +4,7 @@ import (
 	"api-auth/domains"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
 )
 
@@ -16,6 +17,15 @@ type User struct {
 
 type UserRepository struct {
 	db *gorm.DB
+}
+
+type UserRepositoryInterface interface {
+	FindByEmail(email string) *User
+	FindById(userId string) *User
+	CreateUser(input *domains.Register) error
+	UpdatePassword(input *domains.ChangePassword, userId string) error
+	Users() ([]User, error)
+	DeleteUserById(userId string) error
 }
 
 func NewUserRepository(db *gorm.DB) UserRepositoryInterface {
@@ -45,11 +55,11 @@ func (ur *UserRepository) FindById(userId string) *User {
 	return &user
 }
 
-func (ur *UserRepository) CreateUser(uuid string, input *domains.Register) error {
+func (ur *UserRepository) CreateUser(input *domains.Register) error {
 	user := User{}
 
 	newUser := User{
-		ID:       uuid,
+		ID:       uuid.New().String(),
 		Name:     input.Name,
 		Email:    input.Email,
 		Password: input.Password,
@@ -74,9 +84,9 @@ func (ur *UserRepository) UpdatePassword(input *domains.ChangePassword, userId s
 	err = result.Error
 
 	if err != nil {
-		return 
+		return
 	}
-	return 
+	return
 }
 
 func (ur *UserRepository) Users() ([]User, error) {

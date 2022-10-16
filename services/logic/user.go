@@ -5,12 +5,19 @@ import (
 	"api-auth/domains"
 	"api-auth/services/repository"
 	"errors"
-
-	"github.com/google/uuid"
 )
 
 type UserUsecase struct {
 	Repository repository.UserRepositoryInterface
+}
+
+type UserUsecaseInterface interface {
+	GetUsers() ([]repository.User, error)
+	RegisterHandler(input *domains.Register) error
+	LoginHandler(input *domains.Login) (*repository.User, string, error)
+	ChangePasswordHandler(input *domains.ChangePassword) error
+	GetSingleUserHandler(userId string) (*repository.User, error)
+	DeleteUserHandler(userId string) error
 }
 
 func NewUserUsecase(Repository repository.UserRepositoryInterface) UserUsecaseInterface {
@@ -44,8 +51,7 @@ func (uu *UserUsecase) RegisterHandler(input *domains.Register) error {
 		return errors.New("Email has been used!")
 	}
 	input.Password = helper.PasswordHashing(input.Password)
-	uuid := uuid.New().String()
-	err = uu.Repository.CreateUser(uuid, input)
+	err = uu.Repository.CreateUser(input)
 	if err != nil {
 		return err
 	}

@@ -15,8 +15,8 @@ import (
 
 type Suite struct {
 	suite.Suite
-	DB   *gorm.DB
-	mock sqlmock.Sqlmock
+	DB             *gorm.DB
+	mock           sqlmock.Sqlmock
 	userRepository UserRepository
 }
 
@@ -28,7 +28,7 @@ func (s *Suite) SetupSuite() {
 
 	db, s.mock, err = sqlmock.New()
 	assert.NoError(s.T(), err)
-	
+
 	s.DB, err = gorm.Open("mysql", db)
 	assert.NoError(s.T(), err)
 
@@ -39,7 +39,7 @@ func (s *Suite) SetupSuite() {
 
 func (s *Suite) TestUserRepository_SuccessGetUsers() {
 	rows := sqlmock.NewRows([]string{"id", "name", "email", "password"}).AddRow("uuid1", "name1", "email1", "pass1").AddRow("uuid2", "name2", "email2", "pass2")
-	
+
 	s.mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users`")).WillReturnRows(rows)
 
 	users, err := s.userRepository.Users()
@@ -63,7 +63,7 @@ func (s *Suite) TestUserRepository_FailGetUsers() {
 func (s *Suite) TestUserRepository_SuccessFindByEmail() {
 	email := "kale@gmail.com"
 	query := "SELECT * FROM `users` WHERE (email = ?) ORDER BY `users`.`id` ASC LIMIT 1"
-	rows := sqlmock.NewRows([]string{"id","name","email","password"}).AddRow("uuid","kale",email,"password_hashing")
+	rows := sqlmock.NewRows([]string{"id", "name", "email", "password"}).AddRow("uuid", "kale", email, "password_hashing")
 
 	s.mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(email).WillReturnRows(rows)
 
@@ -98,7 +98,6 @@ func (s *Suite) TestUserRepository_SuccessFindById() {
 
 	s.mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs("valid_uuid").WillReturnRows(rows)
 
-
 	user := s.userRepository.FindById("valid_uuid")
 
 	s.NotEmpty(user)
@@ -122,7 +121,6 @@ func (s *Suite) TestUserRepository_SuccessCreateUser() {
 	dbase.LogMode(true)
 	repos := UserRepository{db: dbase}
 
-
 	input := &domains.Register{
 		Name:            "kale",
 		Email:           "kale@gmail.com",
@@ -133,10 +131,10 @@ func (s *Suite) TestUserRepository_SuccessCreateUser() {
 	query := "INSERT INTO `users` (`id`,`name`,`email`,`password`) VALUES (?,?,?,?)"
 
 	mockTemp.ExpectBegin()
-	mockTemp.ExpectExec(regexp.QuoteMeta(query)).WithArgs("uuid", input.Name, input.Email, input.Password).WillReturnResult(sqlmock.NewResult(1,1))
+	mockTemp.ExpectExec(regexp.QuoteMeta(query)).WithArgs("uuid", input.Name, input.Email, input.Password).WillReturnResult(sqlmock.NewResult(1, 1))
 	mockTemp.ExpectCommit()
-	
-	err := repos.CreateUser("uuid", input)
+
+	err := repos.CreateUser(input)
 
 	s.NoError(err)
 }
@@ -155,12 +153,12 @@ func (s *Suite) TestUserRepository_FailCreateUser() {
 	}
 
 	query := "INSERT INTO `users` (`id`,`name`,`email`,`password`) VALUES (?,?,?,?)"
- 
+
 	mockTemp.ExpectBegin()
-	mockTemp.ExpectExec(regexp.QuoteMeta(query)).WithArgs("uuid",input.Name, input.Email, input.Password).WillReturnError(gorm.Errors{})
+	mockTemp.ExpectExec(regexp.QuoteMeta(query)).WithArgs("uuid", input.Name, input.Email, input.Password).WillReturnError(gorm.Errors{})
 	mockTemp.ExpectCommit()
 
-	err := repos.CreateUser("uuid", input)
+	err := repos.CreateUser(input)
 
 	s.Error(err)
 }
@@ -174,7 +172,7 @@ func (s *Suite) TestUserRepository_SuccessDeleteUser() {
 	query := "DELETE FROM `users` WHERE (id = ?)"
 
 	mockTemp.ExpectBegin()
-	mockTemp.ExpectExec(regexp.QuoteMeta(query)).WithArgs("userId").WillReturnResult(sqlmock.NewResult(1,1))
+	mockTemp.ExpectExec(regexp.QuoteMeta(query)).WithArgs("userId").WillReturnResult(sqlmock.NewResult(1, 1))
 	mockTemp.ExpectCommit()
 
 	err := repos.DeleteUserById("userId")
@@ -190,7 +188,7 @@ func (s *Suite) TestUserRepository_FailDeleteUser() {
 
 	query := "DELETE FROM `users` WHERE (id = ?)"
 
-	mockTemp.ExpectBegin() 
+	mockTemp.ExpectBegin()
 	mockTemp.ExpectExec(regexp.QuoteMeta(query)).WithArgs("userId").WillReturnError(gorm.ErrRecordNotFound)
 	mockTemp.ExpectCommit()
 
@@ -206,15 +204,15 @@ func (s *Suite) TestUserRepository_SuccessChangePassword() {
 	repos := UserRepository{db: dbase}
 
 	input := &domains.ChangePassword{
-		Email: "email@gmial.com",
-		NewPassword: "hash_password",
+		Email:           "email@gmial.com",
+		NewPassword:     "hash_password",
 		PasswordConfirm: "hash_password",
 	}
 
 	query := "UPDATE `users` SET `password` = ? WHERE (id = ?)"
 
 	mockTemp.ExpectBegin()
-	mockTemp.ExpectExec(regexp.QuoteMeta(query)).WithArgs(input.NewPassword, "uuid").WillReturnResult(sqlmock.NewResult(0,1))
+	mockTemp.ExpectExec(regexp.QuoteMeta(query)).WithArgs(input.NewPassword, "uuid").WillReturnResult(sqlmock.NewResult(0, 1))
 	mockTemp.ExpectCommit()
 
 	err := repos.UpdatePassword(input, "uuid")
@@ -230,8 +228,8 @@ func (s *Suite) TestUserRepository_FailChangePassword() {
 	repos := UserRepository{db: dbase}
 
 	input := &domains.ChangePassword{
-		Email: "email@gmial.com",
-		NewPassword: "hash_password",
+		Email:           "email@gmial.com",
+		NewPassword:     "hash_password",
 		PasswordConfirm: "hash_password",
 	}
 
